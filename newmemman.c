@@ -26,10 +26,12 @@ uint8_t checkPFN;
 uint8_t checkBITS;
 uint8_t physical_address;
 bool testFile;
-FILE *ptr;
-char FILENAME[20];
+static FILE *ptr;
+char *fileName;
 
 unsigned char memory[SIZE];
+
+char* readLine();
 
 void insertFirst(int address, int free)
 {
@@ -94,24 +96,42 @@ int main(int argc, char **argv)
             insertFirst((PAGE_SIZE * i), 0);
         }
     }
-    printf("Test file? [y/n]: ");
-    fgets(input, sizeof(input), stdin);
-    char *test = strtok(input, ",");
-    if(!strcmp(test, "y")){
+    if(argv[1] != NULL){
+        openFile(argv[1]);
         testFile = true;
-        test = strtok(NULL, ",");
-        FILENAME = test;
-        ptr = fopen (FILENAME, "r");
     }
     else{
         testFile = false;
     }
+    // printf("Test file? [y/n]: ");
+    // fgets(input, sizeof(input), stdin);
+    // //char *test = strtok(input, ",");
+    // char *test;
+    // strcpy(test, input);
+    // printf("input%s\n", test);
+    // if(!strcmp(test, "y")){
+    //     testFile = true;
+    //     //strcpy(fileName, test);
+    //     //printf("filename%s\n", fileName);
+    //     // FILE *fp = fopen(test, "r");
+    //     // ptr = fp;
+    //     openFile(argv[1]);
+    //     if(ptr == NULL){
+    //         printf("Error opening file\n");
+    //         exit(2);
+    //     }
+    //     printf("check\n");
+    // }
+    // else{
+    //     testFile = false;
+    // }
 
     while (1)
     {
         printf("Instruction? ");
         if(testFile){
-            input = readLine();
+            char* string = readLine();
+            strcpy(input, string);
         }
         else{
         fgets(input, sizeof(input), stdin);
@@ -333,8 +353,21 @@ int findPageTable(int PID)
 
 char* readLine(){
     char *string;
+    size_t len = 0;
 
-    fscanf (ptr, "%s", &string);    
+    //fscanf (ptr, "%s", &string);
+    int cnt;
+    cnt = getline(&string, &len, ptr);
+
+    if(cnt == EOF){
+        printf("End of file, exiting...\n");
+        exit(0);
+    }
 
     return string;
+}
+
+void openFile(const char* file_name){
+    FILE* file = fopen (file_name, "r");
+    ptr = file;
 }
